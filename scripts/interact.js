@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 
 async function main() {
     const coinFile = await ethers.getContractFactory("CoinFile");
-    const contract = await coinFile.attach("YOUR_CONTRACT_ADDRESS");
+    const contract = await coinFile.attach("0xbF74892f1FCBEC1649AF2125748D722C6c2f6b64");
     const owner = await contract.owner();
     let balance = await contract.balanceOf(owner);
     // Now you can call functions of the contract

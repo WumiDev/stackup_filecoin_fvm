@@ -123,11 +123,38 @@ export default function Home() {
       const signer = provider.getSigner();
 
       //(1) create DataDao contract instance
+      const dataDAOContractInstance = new ethers.Contract(
+        smartContractAddress,
+        dataDaoABI,
+        signer
+       );
 
       //(2) call getTradingProposalList function
+      const allTradingProposals =
+      await dataDAOContractInstance.getTradingProposalList();
+
+      let proposals = [];
+
+      for (let i = 0; i < allTradingProposals.title.length; i++) {
+        let status: string = allTradingProposals.status[i];
+        let title: string = allTradingProposals.title[i];
+        let description: string = allTradingProposals.description[i];
+        let tradingProposalContractAddress =
+        allTradingProposals.tradingProposalContractAddress[i];
+
+        let proposal: Proposal = {
+          status,
+          title,
+          description,
+          contractAddress: tradingProposalContractAddress,
+        };
+
+        //add to array
+        proposals.push(proposal);
+      }
 
       //(3) set proposal data into variable
-
+      setAllProposals(proposals);
       //check if user has joined DAO
       await checkIfUserJoinedDao(smartContractAddress);
     }
@@ -156,11 +183,11 @@ export default function Home() {
         );
 
         //(4) call joinDataDao function from the datadao contract
-
+        let { hash } = await dataDAOContractInstance.joinDataDao();
         //(5) wait for transaction to be mined
-
+        await provider.waitForTransaction(hash);
         //(6) display alert message
-
+        alert(`Transaction sent! Hash: ${hash}`);
         //update that user has joined the dao
         await checkIfUserJoinedDao(dataDaoContractAddress);
 
@@ -190,6 +217,7 @@ export default function Home() {
       //set loading modal to open and loading modal text
       setLoadedData("Creating Proposal...Please wait");
       openModal();
+
       //call smart contract
       const { ethereum } = window;
       if (ethereum) {
@@ -204,11 +232,14 @@ export default function Home() {
         );
 
         //(7) call joinDataDao function from the datadao contract
-
+        let { hash } = await dataDAOContractInstance.createTradingProposal(
+          title,
+          description
+         );
         //(8) wait for transaction to be mined
-
+        await provider.waitForTransaction(hash);
         //(9) display alert message
-
+        alert(`Transaction sent! Hash: ${hash}`);
         //get updated proposals
         await getAllProposalDetails(dataDaoContractAddress);
 
@@ -300,11 +331,14 @@ export default function Home() {
         );
 
         //(10) call joinDataDao function from the datadao contract
-
+        let { hash } = await dataDAOContractInstance.vote(
+          proposal.proposalInfo.contractAddress,
+          yesOrNo
+        );
         //(11) wait for transaction to be mined
-
+        await provider.waitForTransaction(hash);
         //(12) display alert message
-
+        alert(`Transaction sent! Hash: ${hash}`);
         // get updated proposal details
         await getActiveProposalDetails(proposal.proposalInfo);
 
